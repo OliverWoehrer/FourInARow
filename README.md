@@ -13,9 +13,9 @@ Das Spielfeld besteht aus 6 Zeilen und 7 Spalten. Aus ASCII Zeichen soll ein sym
 4. Es soll eine Maximalzeit geben, um einen Zug durchzuführen, ansonsten hat der Spieler verloren.
 5. Der Sieger wird erst nach einer vorgegebenen Anzahl von Spielen bestimmt.
 6. Zwischen den Spielen muss eine maximale Zeit für den nächsten ersten Zug eingehalten werden, ansonsten wird das Spiel abgebrochen.
-7. Die Applikation sollen wie folgt ausgeführt werden können:
-    fourinarow_server [-p PORT][-n NUMBER_OF_GAMES]
-    fourinarow_client [-p PORT[-i IP]
-    test
 
+
+##Die Applikation sollen wie folgt ausgeführt werden können:
+fourinarow_server [-p PORT][-n NUMBER_OF_GAMES]
+fourinarow_client [-p PORT[-i IP]
 
