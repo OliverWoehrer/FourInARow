@@ -12,6 +12,7 @@ Das Spielfeld besteht aus 6 Zeilen und 7 Spalten. Aus ASCII Zeichen soll ein sym
 4. Es soll eine Maximalzeit geben, um einen Zug durchzuführen, ansonsten hat der Spieler verloren.
 5. Der Sieger wird erst nach einer vorgegebenen Anzahl von Spielen bestimmt.
 6. Zwischen den Spielen muss eine maximale Zeit für den nächsten ersten Zug eingehalten werden, ansonsten wird das Spiel abgebrochen.
+7. Nutzerprofile anlegen. Die Information über die zuletzt gespielte Spielsequenz (Name des Gegners, Anzahl der Spiele, Spielstand am Ende) wird für jeden Spieler nach Anmeldung automatisch angezeigt (sofern er bereits einmal gespielt hat).
 
 
 ## Die Applikation sollen wie folgt ausgeführt werden können:
