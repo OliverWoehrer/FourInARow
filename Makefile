@@ -1,20 +1,18 @@
 CC = gcc
-DEFS = -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L
+DEFS = -D_BSD_SOURCE -D_SVID_SOURCE -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L
 CFLAGS = -Wall -g -std=c99 -pedantic $(DEFS)
+LDFLAGS = -lm
 
-NAME = test
+SERVER_OBJECTS = src/main.o src/messages.o src/socket.o
 
 .PHONY: all clean
+all: server
 
-all: $(NAME)
-
-$(NAME): $(NAME).o
+server: $(SERVER_OBJECTS)
 	$(CC) $(LDFLAGS) -o $@ $^
 
-%.o: %.c
+%.o: %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(NAME).o: $(NAME).c
-
 clean:
-	rm -rf *.o $(NAME)
+	rm -rf src/*.o server
