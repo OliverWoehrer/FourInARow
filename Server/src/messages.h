@@ -9,10 +9,12 @@
 
 const char* progName; // name of the executable, should be set in main at runtime
 const char* usageSynopsis; // string of the usage synopsis, set at runtime
+char debug;
 
 
 void infoMessage(const char* msg);
 void errorMessage(const char *msg);
 void usageMessage(const char* msg);
+void debugMessage(const char *msg);
 
 #endif /* MESSAGES_H */

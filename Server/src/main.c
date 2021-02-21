@@ -8,9 +8,10 @@
 
 #include "messages.h" // provides formated error messages
 #include "socket.h"
+//#include "shared.h"
+#include "game.h"
 
 #define USAGE_SYNOPSIS "[-p PORT]"
-#define MAX_ACCEPTED_CONNECTIONS 10
 
 //Message strings:
 extern const char *progName; // program name string used in messages.h
@@ -30,6 +31,7 @@ int main(int argc, char *argv[]) {
     progName = argv[0]; // set program name
     usageSynopsis = USAGE_SYNOPSIS; // set synopsis string for usage messages
     char status = EXIT_FAILURE; // is set on SUCCESS when terminating successfully at the end 
+    debugMessage("Start.");
 
 
     //Get program arguments:
@@ -59,22 +61,7 @@ int main(int argc, char *argv[]) {
         if ('0' <= portName[i] && portName[i] <= '9') { i++; continue; }
         usageMessage("Invalid port string!");
         goto checkProgArguments; // clean exit
-    }
-
-
-    //Create down and up pipes:
-    int downPipesFD[MAX_ACCEPTED_CONNECTIONS][2]; // stdin of children, parent --> child 
-    int upPipesFD[MAX_ACCEPTED_CONNECTIONS][2]; // stdout of children, parent <-- child
-    for (unsigned char i = 0; i < MAX_ACCEPTED_CONNECTIONS; i++) { // create all pipes
-        if (pipe(downPipesFD[i]) == -1 || pipe(upPipesFD[i]) == -1) {
-            errorMessage("Failed to create pipes.");
-            goto createPipes; // clean exit
-        }
-    }
-
-
-    //Mount shared memory:
-    //TODO
+    }   
 
 
     //Establish socket connection:
@@ -85,13 +72,31 @@ int main(int argc, char *argv[]) {
     }
 
 
+    //Mount shared memory:
+    //TODO
+
+    //Create down and up pipes:
+    int downPipeFD[2]; // stdin of children, parent --> child 
+    int upPipeFD[2]; // stdout of children, parent <-- child
+    if (pipe(downPipeFD) == -1 || pipe(upPipeFD) == -1) { // create all pipes
+        errorMessage("Failed to create pipes.");
+        goto createPipes; // clean exit
+    }
+
     //Initialize signal handler:
     initSignalHandler(SIGINT, stopLoop, &sigint_action);
     initSignalHandler(SIGTERM, stopLoop, &sigint_action);
 
 
     //Loop server; wait for incoming request:
-    while(loop) {
+    debugMessage("Loop.");
+    //while(loop) {
+        game_t game = creatGame();
+        createRandomGame(&game);
+        printBoard(&game);
+        goto interrupt;
+
+        /* ORIGINAL PROCESS FLOW :
         //Wait for client connection:
         int connectionFD = accept(socketFD, NULL, NULL);
         if(connectionFD == -1) { // error handling
@@ -100,35 +105,35 @@ int main(int argc, char *argv[]) {
             goto acceptConnection; // clean exit
         }
 
-
         //Fork at new accept:
         //DATA STRUCT = fork();
-        if (/* DATA STRUCT */ == -1) errorMessage("Failed to fork after accept.");
-        else if (/* DATA STRUCT */ == 0) { /* is child process */ 
+        if (0 == -1) errorMessage("Failed to fork after accept.");
+        else if (0 == 0) { // is child process 
             //Read request:
 
             //Process new turn:
 
             //Send response:
         
-        } else { /* is parent */
+        } else { // is parent process
             // LOOP AGAIN!
         }
+        */
 
         
 
 
         interrupt:/* empty lable */;
-    }
+    //}
     
 
     //Terminate program:
     status = EXIT_SUCCESS; // set status, terminated successfully!
-    acceptConnection:
+    //acceptConnection:
+    createPipes:
+    //mountSharedMemory:
     establishSocketConnection:
         closeSocket(socketFD);
-    mountSharedMemory:
-    createPipes:
     checkProgArguments:
     getProgArguments:
         printf("Done.\n");

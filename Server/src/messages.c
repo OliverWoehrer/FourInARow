@@ -8,8 +8,11 @@
 #include "messages.h"
 #include <stdio.h>	// I/O functions
 #include <stdlib.h>	// provides exit()
+#include <unistd.h>     // provides process ID
 #include <string.h>	// for string handling
 #include <errno.h>	// to use errno
+
+char debug = 1;
 
 /**
  * @brief This function prints the given message to the stderr stream
@@ -43,4 +46,14 @@ void errorMessage(const char *msg) {
 void usageMessage(const char* msg) {
         fprintf(stderr, "%s\nUSAGE: %s %s\n", msg, progName, usageSynopsis);
         exit(EXIT_FAILURE);
+}
+
+/**
+ * @brief prints the given debug message and formates the message by adding the program
+ * name as well at the current process ID at the start of the line. A LF is added to
+ * the end of the string.
+ * @warning can enabled/disabled by setting the 'debug' variable
+ */
+void debugMessage(const char *msg) {
+        if (debug) fprintf(stderr, "[DEBUG %s(%d)] %s\n", progName, getpid(), msg);
 }
