@@ -1,7 +1,7 @@
 import numpy as np
 import pygame
-import sys
-import math
+import random
+
 
 BLUE = (0,0,255)
 BLACK = (0,0,0)
@@ -11,6 +11,37 @@ WHITE = (255,255,255)
 
 ROW_COUNT = 6
 COLUMN_COUNT = 7
+
+
+WIDTH = 600
+HEIGHT = 900
+size = (WIDTH, HEIGHT)
+FPS = 60
+
+class Jeton(pygame.sprite.Sprite):
+    def __init__(self, color, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        if color == RED:
+            self.image = pygame.image.load("Images/JetonRot.png")
+        if color == BLUE:
+            self.image = pygame.image.load("Images/JetonBlau.png")
+        if color == YELLOW:
+            self.image = pygame.image.load("Images/JetonGelb.png")
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+    
+    def gravity(self):
+        self.rect.y += 3.2
+    
+class Board(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("Images/Brett.png")
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+
+
+
 
 def create_board():
     board = np.zeros((ROW_COUNT,COLUMN_COUNT))
@@ -26,83 +57,48 @@ def get_next_open(board, col):
     for r in range(ROW_COUNT):
         if board[r][col] == 0:
             return r
-
-def print_board(board):
-    print(np.flip(board, 0))
-
-
-def draw_board(board):
-    pygame.draw.rect(screen,BLUE, (0,SQUARESIZE, width,height-2*SQUARESIZE))
-    for c in range(COLUMN_COUNT):
-        for r in range(ROW_COUNT):
-            pygame.draw.circle(screen, BLACK, (int(c*SQUARESIZE+SQUARESIZE/2),int(r*SQUARESIZE+SQUARESIZE+SQUARESIZE/2)),RADIUS)
-    
-    for c in range(COLUMN_COUNT):
-	    for r in range(ROW_COUNT):		
-		    if board[r][c] == 1:
-			    pygame.draw.circle(screen, RED, (int(c*SQUARESIZE+SQUARESIZE/2), height-int(r*SQUARESIZE+SQUARESIZE+SQUARESIZE/2)), RADIUS)
-		    elif board[r][c] == 2: 
-			    pygame.draw.circle(screen, YELLOW, (int(c*SQUARESIZE+SQUARESIZE/2), height-int(r*SQUARESIZE+SQUARESIZE+SQUARESIZE/2)), RADIUS)
-
-    pygame.display.update()
-
-
-board = create_board()
-print_board(board)
-turn = 0
-game_over = False
-
+           
 pygame.init()
-
-SQUARESIZE = 100
-
-width = COLUMN_COUNT * SQUARESIZE
-height = (ROW_COUNT+2) * SQUARESIZE
-
-size = (width, height)
-
-RADIUS = int(SQUARESIZE/2 - 5)
-
+pygame.mixer.init()
 screen = pygame.display.set_mode(size)
-draw_board(board)
-pygame.display.update()
+pygame.display.set_caption("FourInARow")
+clock = pygame.time.Clock()
 
-myfont = pygame.font.SysFont("monospace", 75)
+all_sprites = pygame.sprite.Group()
 
-while not game_over:
+
+jeton = Jeton(RED,50, 150)
+all_sprites.add(jeton)
+
+board = Board(WIDTH/2, HEIGHT/2)
+all_sprites.add(board)
+
+
+
+running = True
+while running:
+
+    clock.tick(FPS)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            sys.exit()
-        
-        if event.type == pygame.MOUSEMOTION:
-            pygame.draw.rect(screen,BLACK,(0,0,width,SQUARESIZE))
-            posx = event.pos[0]
-            if turn == 0:
-                pygame.draw.circle(screen,RED,(posx,int(SQUARESIZE/2)), RADIUS)
-            else:
-                pygame.draw.circle(screen,YELLOW,(posx,int(SQUARESIZE/2)), RADIUS)
-        
-        pygame.display.update()
-        
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            pygame.draw.rect(screen, BLACK, (0,0, width, SQUARESIZE))
-            if turn == 0:  
-                posx = event.pos[0]
-                col = int(math.floor(posx/SQUARESIZE))
-                if is_valid_location(board, col):
-                    row = get_next_open(board, col)
-                    insert_piece(board, row, col, 1)
+            running = False
+        if event.type == pygame.MOUSEBUTTONUP:
+            pos = pygame.mouse.get_pos()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                jeton.rect.y -= 100
+            if event.key == pygame.K_DOWN:
+                jeton.rect.y += 100
+            if event.key == pygame.K_LEFT:
+                jeton.rect.x -= 100
+            if event.key == pygame.K_RIGHT:
+                jeton.rect.x += 100
 
-            else:				
-                posx = event.pos[0]
-                col = int(math.floor(posx/SQUARESIZE))
-                if is_valid_location(board, col):
-                    row = get_next_open(board, col)
-                    insert_piece(board, row, col, 2)
 
-            print_board(board)
-            draw_board(board)
+    all_sprites.update()
+    screen.fill(BLACK)
+    all_sprites.draw(screen)
+    pygame.display.flip()
 
-            turn += 1
-            turn = turn % 2
+pygame.quit()
