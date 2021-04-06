@@ -23,7 +23,80 @@ pygame.init()
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("FourInARow")
 clock = pygame.time.Clock()
-font = pygame.font.Font(None, 32)
+COLOR_INACTIVE = pygame.Color('lightskyblue3')
+COLOR_ACTIVE = pygame.Color('dodgerblue2')
+FONT = pygame.font.Font(None, 32)
+
+class InputBox:
+
+    def __init__(self, x, y, w, h, text=''):
+        self.rect = pygame.Rect(x, y, w, h)
+        self.color = COLOR_INACTIVE
+        self.text = text
+        self.txt_surface = FONT.render(text, True, self.color)
+        self.active = False
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # If the user clicked on the input_box rect.
+            if self.rect.collidepoint(event.pos):
+                # Toggle the active variable.
+                self.active = not self.active
+            else:
+                self.active = False
+            # Change the current color of the input box.
+            self.color = COLOR_ACTIVE if self.active else COLOR_INACTIVE
+        if event.type == pygame.KEYDOWN:
+            if self.active:
+                if event.key == pygame.K_RETURN:
+                    print(self.text)
+                    self.text = ''
+                elif event.key == pygame.K_BACKSPACE:
+                    self.text = self.text[:-1]
+                else:
+                    self.text += event.unicode
+                # Re-render the text.
+                self.txt_surface = FONT.render(self.text, True, self.color)
+
+    def update(self):
+        # Resize the box if the text is too long.
+        width = max(200, self.txt_surface.get_width()+10)
+        self.rect.w = width
+
+    def draw(self, screen):
+        # Blit the text.
+        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
+        # Blit the rect.
+        pygame.draw.rect(screen, self.color, self.rect, 2)
+
+class button():
+    def __init__(self, color, x,y,width,height, text=''):
+        self.color = color
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.text = text
+
+    def draw(self,win,outline=None):
+        #Call this method to draw the button on the screen
+        if outline:
+            pygame.draw.rect(win, outline, (self.x-2,self.y-2,self.width+4,self.height+4),0)
+            
+        pygame.draw.rect(win, self.color, (self.x,self.y,self.width,self.height),0)
+        
+        if self.text != '':
+            font = pygame.font.SysFont('comicsans', 60)
+            text = font.render(self.text, 1, (0,0,0))
+            win.blit(text, (self.x + (self.width/2 - text.get_width()/2), self.y + (self.height/2 - text.get_height()/2)))
+
+    def isOver(self, pos):
+        #Pos is the mouse position or a tuple of (x,y) coordinates
+        if pos[0] > self.x and pos[0] < self.x + self.width:
+            if pos[1] > self.y and pos[1] < self.y + self.height:
+                return True
+            
+        return False
 
 class Jeton(pygame.sprite.Sprite):
     def __init__(self, color, x, y):
@@ -129,51 +202,29 @@ def main():
 
 def Menu():
 
-    
-    
-    input_box = pygame.Rect(260, 320, 180, 32)
-    color_inactive = pygame.Color('lightskyblue3')
-    color_active = pygame.Color('dodgerblue2')
-    color = color_inactive
-    active = False
-    text = ''
+    input_box1 = InputBox(100, 100, 140, 32)
+    input_box2 = InputBox(100, 300, 140, 32)
+    input_boxes = [input_box1, input_box2]
     done = False
 
     while not done:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                # If the user clicked on the input_box rect.
-                if input_box.collidepoint(event.pos):
-                    # Toggle the active variable.
-                    active = not active
-                else:
-                    active = False
-                # Change the current color of the input box.
-                color = color_active if active else color_inactive
-            if event.type == pygame.KEYDOWN:
-                if active:
-                    if event.key == pygame.K_RETURN:
-                        print(text)
-                        text = ''
-                    elif event.key == pygame.K_BACKSPACE:
-                        text = text[:-1]
-                    else:
-                        text += event.unicode
+            for box in input_boxes:
+                box.handle_event(event)
 
-        screen.fill(BLACK)
-        # Render the current text.
-        txt_surface = font.render(text, True, color)
-        # Blit the text.
-        screen.blit(txt_surface, (input_box.x+5, input_box.y+5))
-        # Blit the input_box rect.
-        pygame.draw.rect(screen, color, input_box, 2)
+        for box in input_boxes:
+            box.update()
+
+        screen.fill((30, 30, 30))
+        for box in input_boxes:
+            box.draw(screen)
 
         pygame.display.flip()
         clock.tick(30)
 
 if __name__ == '__main__':
-    main()
-    ##Menu()
+    ##main()
+    Menu()
     pygame.quit()
