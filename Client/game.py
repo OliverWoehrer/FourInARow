@@ -4,6 +4,24 @@ import math
 import time
 
 
+# import socket
+
+# HOST = '10.232.11.194'  # The server's hostname or IP address
+# PORT = 65432        # The port used by the server
+
+# def main() :
+#     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+#         s.connect((HOST, PORT))
+#         print ('Test')
+#         s.sendall(b'Hello, world')
+#         data = s.recv(3)
+#         print('Received', repr(data))
+#         exit()
+
+
+# if __name__ == "__main__":
+#     main()#
+
 BLUE = (0,0,255)
 BLACK = (30,30,30)
 RED = (255,0,0)
@@ -30,6 +48,10 @@ FONT = pygame.font.Font(None, 32)
 class InputBox:
 
     def __init__(self, x, y, w, h, text=''):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
         self.rect = pygame.Rect(x, y, w, h)
         self.color = COLOR_INACTIVE
         self.text = text
@@ -54,14 +76,10 @@ class InputBox:
                 elif event.key == pygame.K_BACKSPACE:
                     self.text = self.text[:-1]
                 else:
-                    self.text += event.unicode
+                    if  self.txt_surface.get_width() < self.w-10:
+                        self.text += event.unicode
                 # Re-render the text.
                 self.txt_surface = FONT.render(self.text, True, self.color)
-
-    def update(self):
-        # Resize the box if the text is too long.
-        width = max(200, self.txt_surface.get_width()+10)
-        self.rect.w = width
 
     def draw(self, screen):
         # Blit the text.
@@ -70,33 +88,36 @@ class InputBox:
         pygame.draw.rect(screen, self.color, self.rect, 2)
 
 class button():
-    def __init__(self, color, x,y,width,height, text=''):
-        self.color = color
+    def __init__(self, x,y,width,height, text=''):
+        self.color =COLOR_INACTIVE
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.text = text
+        self.txt_surface = FONT.render(text, True, self.color)
+        self.rect = pygame.Rect(x, y, width, height)
+        self.active = False
 
-    def draw(self,win,outline=None):
-        #Call this method to draw the button on the screen
-        if outline:
-            pygame.draw.rect(win, outline, (self.x-2,self.y-2,self.width+4,self.height+4),0)
-            
-        pygame.draw.rect(win, self.color, (self.x,self.y,self.width,self.height),0)
-        
-        if self.text != '':
-            font = pygame.font.SysFont('comicsans', 60)
-            text = font.render(self.text, 1, (0,0,0))
-            win.blit(text, (self.x + (self.width/2 - text.get_width()/2), self.y + (self.height/2 - text.get_height()/2)))
+    def draw(self,win):
+        self.txt_surface = FONT.render(self.text, True, self.color)
+        screen.blit(self.txt_surface, (self.rect.x+self.width/2-self.txt_surface.get_width()/2, self.rect.y+self.height/2-self.txt_surface.get_height()/2))
+        pygame.draw.rect(win, self.color, (self.x,self.y,self.width,self.height),2)
+    
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                self.color = YELLOW
+            else:
+                self.color = COLOR_INACTIVE
+        if event.type == pygame.MOUSEMOTION:
+            if self.rect.collidepoint(event.pos):
+                self.color = COLOR_ACTIVE
+            else:
+                self.color = COLOR_INACTIVE    
+    
 
-    def isOver(self, pos):
-        #Pos is the mouse position or a tuple of (x,y) coordinates
-        if pos[0] > self.x and pos[0] < self.x + self.width:
-            if pos[1] > self.y and pos[1] < self.y + self.height:
-                return True
-            
-        return False
+
 
 class Jeton(pygame.sprite.Sprite):
     def __init__(self, color, x, y):
@@ -202,6 +223,8 @@ def main():
 
 def Menu():
 
+    input_button1 = button(50,50 ,140,43, 'Play')
+    input_buttons = [input_button1]
     input_box1 = InputBox(100, 100, 140, 32)
     input_box2 = InputBox(100, 300, 140, 32)
     input_boxes = [input_box1, input_box2]
@@ -213,13 +236,13 @@ def Menu():
                 done = True
             for box in input_boxes:
                 box.handle_event(event)
-
-        for box in input_boxes:
-            box.update()
+            for but in input_buttons:
+                but.handle_event(event)
 
         screen.fill((30, 30, 30))
         for box in input_boxes:
             box.draw(screen)
+        input_button1.draw(screen)
 
         pygame.display.flip()
         clock.tick(30)
