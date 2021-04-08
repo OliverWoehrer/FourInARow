@@ -3,6 +3,9 @@ import pygame
 import math
 import time
 
+from pygame.constants import WINDOWHITTEST
+from pygame.font import Font
+
 
 # import socket
 
@@ -44,6 +47,8 @@ clock = pygame.time.Clock()
 COLOR_INACTIVE = pygame.Color('lightskyblue3')
 COLOR_ACTIVE = pygame.Color('dodgerblue2')
 FONT = pygame.font.Font(None, 32)
+TITLEFONT = pygame.font.Font(None, 100)
+error = False
 
 class InputBox:
 
@@ -68,6 +73,7 @@ class InputBox:
                 self.active = False
             # Change the current color of the input box.
             self.color = COLOR_ACTIVE if self.active else COLOR_INACTIVE
+            
         if event.type == pygame.KEYDOWN:
             if self.active:
                 if event.key == pygame.K_RETURN:
@@ -80,6 +86,11 @@ class InputBox:
                         self.text += event.unicode
                 # Re-render the text.
                 self.txt_surface = FONT.render(self.text, True, self.color)
+        if event.type == pygame.MOUSEMOTION:
+            if self.rect.collidepoint(event.pos):
+                self.color = COLOR_ACTIVE
+            else:
+                self.color = COLOR_INACTIVE 
 
     def draw(self, screen):
         # Blit the text.
@@ -108,15 +119,18 @@ class button():
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 self.color = YELLOW
+                return True
             else:
                 self.color = COLOR_INACTIVE
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.color = COLOR_INACTIVE
         if event.type == pygame.MOUSEMOTION:
             if self.rect.collidepoint(event.pos):
                 self.color = COLOR_ACTIVE
             else:
-                self.color = COLOR_INACTIVE    
+                self.color = COLOR_INACTIVE 
+        return False   
     
-
 
 
 class Jeton(pygame.sprite.Sprite):
@@ -142,6 +156,7 @@ class Jeton(pygame.sprite.Sprite):
         else:
             return False
     
+
 class Board(pygame.sprite.Sprite):
     array = np.zeros((ROW_COUNT,COLUMN_COUNT))
     
@@ -165,10 +180,9 @@ class Board(pygame.sprite.Sprite):
 
     def print_array(self):
         print(np.flip(self.array, 0))
+   
 
-
-           
-def main():
+def game():
     
     all_sprites = pygame.sprite.Group()
 
@@ -223,11 +237,15 @@ def main():
 
 def Menu():
 
-    input_button1 = button(50,50 ,140,43, 'Play')
+    input_button1 = button((2*WIDTH)/6,450 ,WIDTH/3,35, 'Play')
     input_buttons = [input_button1]
-    input_box1 = InputBox(100, 100, 140, 32)
-    input_box2 = InputBox(100, 300, 140, 32)
+    input_box1 = InputBox((2*WIDTH)/6, 300, WIDTH/3, 35)
+    input_box2 = InputBox((2*WIDTH)/6, 400, WIDTH/3, 35)
     input_boxes = [input_box1, input_box2]
+    title = TITLEFONT.render("FourInARow", False, COLOR_INACTIVE)
+    comment1 = FONT.render("Name:", False, COLOR_INACTIVE)
+    comment2 = FONT.render("GameID:", False, COLOR_INACTIVE)
+    errormsg = FONT.render("Error", False, RED)
     done = False
 
     while not done:
@@ -237,17 +255,26 @@ def Menu():
             for box in input_boxes:
                 box.handle_event(event)
             for but in input_buttons:
-                but.handle_event(event)
+                if but.handle_event(event):
+                    print("Sending Data")
+                    print("Waiting for server repsoned")
+                    game()
 
-        screen.fill((30, 30, 30))
+        screen.fill(BLACK)
+        screen.blit(title, ((WIDTH/2)-(title.get_width()/2), 100))
+        screen.blit(comment1,((2*WIDTH)/6,275))
+        screen.blit(comment2,((2*WIDTH)/6,375))
+        if error == True:
+            screen.blit(errormsg,((WIDTH/2)-(errormsg.get_width()/2),600))
+
         for box in input_boxes:
             box.draw(screen)
-        input_button1.draw(screen)
+        for but in input_buttons:
+            but.draw(screen)
 
         pygame.display.flip()
         clock.tick(30)
 
 if __name__ == '__main__':
-    ##main()
     Menu()
     pygame.quit()
