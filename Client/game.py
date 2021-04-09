@@ -2,6 +2,7 @@ import numpy as np
 import pygame
 import math
 import time
+import sys
 
 from pygame.constants import WINDOWHITTEST
 from pygame.font import Font
@@ -76,10 +77,7 @@ class InputBox:
             
         if event.type == pygame.KEYDOWN:
             if self.active:
-                if event.key == pygame.K_RETURN:
-                    print(self.text)
-                    self.text = ''
-                elif event.key == pygame.K_BACKSPACE:
+                if event.key == pygame.K_BACKSPACE:
                     self.text = self.text[:-1]
                 else:
                     if  self.txt_surface.get_width() < self.w-10:
@@ -228,7 +226,10 @@ def game():
                             
                     turn += 1
                     turn = turn % 2
-                        
+                if event.key == pygame.K_ESCAPE:
+                    Menu()
+                    pygame.quit()
+                    sys.exit()
         all_sprites.update()
         screen.fill(BLACK)
         all_sprites.draw(screen)
@@ -238,7 +239,8 @@ def game():
 def Menu():
 
     input_button1 = button((2*WIDTH)/6,450 ,WIDTH/3,35, 'Play')
-    input_buttons = [input_button1]
+    input_button2 = button((2*WIDTH)/6,500 ,WIDTH/3,35, 'Quit')
+    input_buttons = [input_button1, input_button2]
     input_box1 = InputBox((2*WIDTH)/6, 300, WIDTH/3, 35)
     input_box2 = InputBox((2*WIDTH)/6, 400, WIDTH/3, 35)
     input_boxes = [input_box1, input_box2]
@@ -254,11 +256,16 @@ def Menu():
                 done = True
             for box in input_boxes:
                 box.handle_event(event)
-            for but in input_buttons:
-                if but.handle_event(event):
-                    print("Sending Data")
-                    print("Waiting for server repsoned")
-                    game()
+            
+            if input_button1.handle_event(event):
+                print("Sending Data")
+                print("Waiting for server repsoned")
+                game()
+                pygame.quit()
+                sys.exit()
+            if input_button2.handle_event(event):
+                pygame.quit()
+                sys.exit()        
 
         screen.fill(BLACK)
         screen.blit(title, ((WIDTH/2)-(title.get_width()/2), 100))
